@@ -7,7 +7,7 @@ app = Flask(__name__)
 conn = psycopg2.connect("dbname=pets_hotel user=")
 cursor = conn.cursor()
 
-@app.route('/', methods=['GET'])
+@app.route('/api/test', methods=['GET'])
 def index():
     if request.method == 'GET':
         return 'CONNECTED TO SERVER'

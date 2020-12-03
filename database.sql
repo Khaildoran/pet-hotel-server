@@ -21,4 +21,4 @@ CREATE TABLE "pets" (
   OIDS=FALSE
 );
 
-ALTER TABLE "pets" ADD CONSTRAINT "pets_fk0" FOREIGN KEY ("owner_id") REFERENCES "owners"("id");
+ALTER TABLE "pets" ADD CONSTRAINT "pets_fk0" FOREIGN KEY ("owner_id") REFERENCES "owners"("id"); 

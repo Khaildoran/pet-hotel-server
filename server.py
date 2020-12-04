@@ -33,8 +33,7 @@ def pets_route():
         except (Exception, psycopg2.Error) as error:
             return 'ERROR!', 500, error
 
-# Route for the delete
-
+# Route for the Pets table with paramater for pet id
 @app.route('/api/pets/<int:pet_id>', methods=['PUT', 'DELETE'])
 def pet_byId_route(pet_id):
     try:
@@ -46,8 +45,10 @@ def pet_byId_route(pet_id):
                 sql = 'UPDATE "pets" SET "is_checked_in" = true WHERE "id" = %s'
             else:
                 return 'Something has gone wrong', 501
+            
             cursor.execute(sql, [pet_id])
             conn.commit()
+            return 'Request OK'
 
         elif (request.method == 'DELETE'):
             cur = conn.cursor()
@@ -56,6 +57,7 @@ def pet_byId_route(pet_id):
             cur.execute(queryText, [pet_id])
             conn.commit()
             return 'Was deleted by ID'
+            
     except(Exception, psycopg2.Error) as error:
         print("Error connecting to PostgreSQL database", error)
         return error, 500
@@ -75,3 +77,4 @@ def owners_route():
             return 'OK'
         except(Exception, psycopg2.Error) as error:
             print("Error connecting to PostgreSQL database", error)
+            return error, 500

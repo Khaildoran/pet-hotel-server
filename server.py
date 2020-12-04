@@ -24,7 +24,8 @@ def pets_route():
         return jsonify(data)
     elif request.method == 'POST':
         try:
-            data = ['simon2', 'hooman', 'green', True, 2]
+            req = request.get_json()
+            data = [req['name'], req['breed'], req['color'], True, req['owner_id']]
             cursor.execute('INSERT INTO "pets" ("name", "breed", "color", "is_checked_in", "owner_id") VALUES(%s, %s, %s, %s, %s)', data)
             conn.commit()
             return "OK"

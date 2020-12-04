@@ -16,6 +16,7 @@ def index():
 # Route for the Pets table
 @app.route('/api/pets', methods=['GET'])
 def pets_route():
+    # handle the GET request
     if request.method == 'GET':
         cursor.execute('SELECT * FROM "pets"')
         data = cursor.fetchall()

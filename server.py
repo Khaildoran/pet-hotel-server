@@ -14,7 +14,7 @@ def index():
         return 'CONNECTED TO SERVER'
 
 # Route for the Pets table
-@app.route('/api/pets', methods=['GET'])
+@app.route('/api/pets', methods=['GET', 'POST'])
 def pets_route():
     # handle the GET request
     if request.method == 'GET':
@@ -22,6 +22,43 @@ def pets_route():
         data = cursor.fetchall()
         print('data from pets GET:', data)
         return jsonify(data)
+
+    elif request.method == 'POST':
+        try:
+            req = request.get_json()
+            data = [req['name'], req['breed'], req['color'], True, req['owner_id']]
+            cursor.execute('INSERT INTO "pets" ("name", "breed", "color", "is_checked_in", "owner_id") VALUES(%s, %s, %s, %s, %s)', data)
+            conn.commit()
+            return "OK"
+        except (Exception, psycopg2.Error) as error:
+            return 'ERROR!', 500, error
+
+# Route for the delete
+
+@app.route('/api/pets/<int:pet_id>', methods=['PUT', 'DELETE'])
+def pet_byId_route(pet_id):
+    try:
+        if request.method == 'PUT':
+            req = request.get_json()
+            if req['checkDirection'] == 'OUT':
+                sql = 'UPDATE "pets" SET "is_checked_in" = false WHERE "id" = %s'
+            elif req['checkDirection'] == 'IN':
+                sql = 'UPDATE "pets" SET "is_checked_in" = true WHERE "id" = %s'
+            else:
+                return 'Something has gone wrong', 501
+            cursor.execute(sql, [pet_id])
+            conn.commit()
+
+        elif (request.method == 'DELETE'):
+            cur = conn.cursor()
+            data = request.json
+            queryText = """DELETE FROM "pets" WHERE id = %s; """
+            cur.execute(queryText, [pet_id])
+            conn.commit()
+            return 'Was deleted by ID'
+    except(Exception, psycopg2.Error) as error:
+        print("Error connecting to PostgreSQL database", error)
+        return error, 500
 
 # Route for the Owners table
 @app.route('/api/owners', methods=['POST'])

@@ -14,16 +14,27 @@ def index():
         return 'CONNECTED TO SERVER'
 
 # Route for the Pets table
-@app.route('/api/pets', methods=['GET'])
+@app.route('/api/pets', methods=['GET', 'POST'])
 def pets_route():
+    # handle the GET request
     if request.method == 'GET':
         cursor.execute('SELECT * FROM "pets"')
         data = cursor.fetchall()
         print('data from pets GET:', data)
         return jsonify(data)
 
+    elif request.method == 'POST':
+        try:
+            req = request.get_json()
+            data = [req['name'], req['breed'], req['color'], True, req['owner_id']]
+            cursor.execute('INSERT INTO "pets" ("name", "breed", "color", "is_checked_in", "owner_id") VALUES(%s, %s, %s, %s, %s)', data)
+            conn.commit()
+            return "OK"
+        except (Exception, psycopg2.Error) as error:
+            return 'ERROR!', 500, error
+
 # Route for the Pets table with paramater for pet id
-@app.route('/api/pets/<int:pet_id>', methods=['PUT'])
+@app.route('/api/pets/<int:pet_id>', methods=['PUT', 'DELETE'])
 def pet_byId_route(pet_id):
     try:
         if request.method == 'PUT':
@@ -35,10 +46,35 @@ def pet_byId_route(pet_id):
             else:
                 return 'Something has gone wrong', 501
             
-            cursor.execute(sql, (pet_id,))
+            cursor.execute(sql, [pet_id])
             conn.commit()
-            return 'Request OK', 200
+            return 'Request OK'
 
+        elif (request.method == 'DELETE'):
+            cur = conn.cursor()
+            data = request.json
+            queryText = """DELETE FROM "pets" WHERE id = %s; """
+            cur.execute(queryText, [pet_id])
+            conn.commit()
+            return 'Was deleted by ID'
+            
     except(Exception, psycopg2.Error) as error:
         print("Error connecting to PostgreSQL database", error)
-        return 'Bad Request %s' % error, 500
+        return error, 500
+
+# Route for the Owners table
+@app.route('/api/owners', methods=['POST'])
+def owners_route():
+    # handle the POST request
+    if request.method == 'POST':
+        try:
+            req = request.get_json()
+            SQL = 'INSERT INTO "owners" ("first_name", "last_name") VALUES (%s, %s);'
+            data = [req['first_name'], req['last_name']]
+            cursor.execute(SQL, data)
+            conn.commit()
+            print('in owners POST')
+            return 'OK'
+        except(Exception, psycopg2.Error) as error:
+            print("Error connecting to PostgreSQL database", error)
+            return error, 500
